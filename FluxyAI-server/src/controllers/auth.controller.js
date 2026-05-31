@@ -59,6 +59,30 @@ class AuthController {
       next(error);
     }
   };
+
+  logout = async (req, res, next) => {
+    try {
+      const accessToken = req.cookies?.accessToken;
+      const refreshToken = req.cookies?.refreshToken;
+
+      if(accessToken){
+        this.authService.verifyAccessToken(accessToken);
+      }
+
+      if(refreshToken){
+        this.authService.verifyRefreshToken(refreshToken);
+      }
+
+      res.clearCookie("accessToken", this.cookieOptions);
+      res.clearCookie("refreshToken", this.cookieOptions);
+
+      res
+        .status(200)
+        .json({ success: true, message: "Logged out successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default new AuthController();

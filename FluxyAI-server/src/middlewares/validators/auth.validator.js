@@ -71,4 +71,3 @@ const validate = (schema) => (req, res, next) => {
 
 export const registerValidator = validate(registerSchema);
 export const loginValidator = validate(loginSchema);
-

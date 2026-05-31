@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import MongoUserRepository from "../repositories/implementations/mongoUserRepository.js";
 import { AppError } from "../utils/errors.js";
+import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config/environment.js";
+
 class AuthService {
   constructor() {
     this.userRepository = new MongoUserRepository();
@@ -23,7 +25,7 @@ class AuthService {
         email: user.email,
         username: user.username
       },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       {
         expiresIn: "15m",
       },
@@ -33,7 +35,7 @@ class AuthService {
       {
         id: user._id,
       },
-      process.env.JWT_REFRESH_SECRET,
+      JWT_REFRESH_SECRET,
       {
         expiresIn: "7d",
       },
@@ -61,12 +63,12 @@ class AuthService {
 
     const accessToken = jwt.sign(
       { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
+      JWT_SECRET,
       { expiresIn: "15m" },
     );
     const refreshToken = jwt.sign(
       { id: user._id },
-      process.env.JWT_REFRESH_SECRET,
+      JWT_REFRESH_SECRET,
       { expiresIn: "7d" },
     );
     return {
@@ -78,6 +80,14 @@ class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  verifyAccessToken(token) {
+    return jwt.verify(token, JWT_SECRET);
+  }
+  
+  verifyRefreshToken(token) {
+    return jwt.verify(token, JWT_REFRESH_SECRET);
   }
 }
 

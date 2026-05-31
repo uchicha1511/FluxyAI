@@ -2,7 +2,9 @@ import dotenv from "dotenv/config";
 
 const Secrets = [
     "PORT",
-    "MONGO_URI"
+    "MONGO_URI",
+    "JWT_SECRET",
+    "JWT_REFRESH_SECRET"
 ]
 
 const missing = Secrets.filter((secret) => {
@@ -14,4 +16,4 @@ if (missing.length > 0) {
 }
 
 
-export const { PORT, MONGO_URI } = process.env;
+export const { PORT, MONGO_URI, JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
