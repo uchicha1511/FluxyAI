@@ -11,8 +11,12 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mongoose": "^9.6.3"
+    "json": "^11.0.0",
+    "mongoose": "^9.6.3",
+    "token": "^0.1.0",
+    "web": "^0.0.2"
   }
 }
