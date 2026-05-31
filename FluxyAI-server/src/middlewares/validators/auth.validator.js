@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { AppError } from "../../utils/error.js";
+import { AppError } from "../../utils/errors.js";
 
 const registerSchema = Joi.object({
   firstName: Joi.string().required().messages({
@@ -25,6 +25,19 @@ const registerSchema = Joi.object({
   }),
 });
 
+const loginSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "A valid email address is required",
+    "any.required": "Email is required",
+    "string.empty": "Email is required",
+  }),
+  password: Joi.string().required().messages({
+    "any.required": "Password is required",
+    "string.empty": "Password is required",
+  }),
+});
+
+
 const validate = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, {
     abortEarly: false,
@@ -44,3 +57,5 @@ const validate = (schema) => (req, res, next) => {
 };
 
 export const registerValidator = validate(registerSchema);
+export const loginValidator = validate(loginSchema);
+

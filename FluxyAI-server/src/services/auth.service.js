@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import MongoUserRepository from "../repositories/implementations/mongoUserRepository.js";
-import { AppError } from "../../utils/error.js";
+import { AppError } from "../utils/errors.js";
 class AuthService {
   constructor() {
     this.userRepository = new MongoUserRepository();
@@ -38,6 +38,37 @@ class AuthService {
       },
     );
 
+    return {
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      },
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async login(userData) {
+    const { email, password } = userData;
+
+    const user = await this.userRepository.findUserByEmail(email);
+    if (!user) throw new AppError("Invalid email or password", 401);
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) throw new AppError("Invalid email or password", 401);
+
+    const accessToken = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" },
+    );
+    const refreshToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" },
+    );
     return {
       user: {
         id: user._id,
