@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 import MongoUserRepository from "../repositories/implementations/mongoUserRepository.js";
-import { AppError } from "../utils/appError.js";
-
+import { AppError } from "../../utils/error.js";
 class AuthService {
   constructor() {
     this.userRepository = new MongoUserRepository();
