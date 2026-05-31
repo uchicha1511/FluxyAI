@@ -5,9 +5,30 @@ class AuthController {
     this.authService = new AuthService();
   }
 
+  get cookieOptions() {
+    const isProd = process.env.NODE_ENV === "production";
+    return {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+      path: "/",
+    };
+  }
+
   register = async (req, res, next) => {
     try {
       const result = await this.authService.register(req.body);
+
+      res.cookie("accessToken", result.accessToken, {
+      ...this.cookieOptions,
+      maxAge: 15* 60 * 1000,  // 15 minutes
+      });
+
+      res.cookie("refreshToken", result.refreshToken, {
+        ...this.cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+      delete result.refreshToken;
 
       res.status(201).json({
         success: true,
@@ -21,6 +42,18 @@ class AuthController {
   login = async (req, res, next) => {
     try {
       const result = await this.authService.login(req.body);
+
+      res.cookie("accessToken", result.accessToken, {
+        ...this.cookieOptions,
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.cookie("refreshToken", result.refreshToken, {
+        ...this.cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+      delete result.refreshToken;
+
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
