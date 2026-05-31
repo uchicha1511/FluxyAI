@@ -21,6 +21,7 @@ class AuthService {
       {
         id: user._id,
         email: user.email,
+        username: user.username
       },
       process.env.JWT_SECRET,
       {
@@ -41,8 +42,7 @@ class AuthService {
     return {
       user: {
         id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        username: user.username,
         email: user.email,
       },
       accessToken,
@@ -72,8 +72,7 @@ class AuthService {
     return {
       user: {
         id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        username: user.username,
         email: user.email,
       },
       accessToken,

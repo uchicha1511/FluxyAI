@@ -2,15 +2,19 @@ import Joi from "joi";
 import { AppError } from "../../utils/errors.js";
 
 const registerSchema = Joi.object({
-  firstName: Joi.string().required().messages({
-    "any.required": "First name is required",
-    "string.empty": "First name is required",
-  }),
-
-  lastName: Joi.string().required().messages({
-    "any.required": "Last name is required",
-    "string.empty": "Last name is required",
-  }),
+  username: Joi.string()
+    .required()
+    .min(3)
+    .max(30)
+    .regex(/^[a-zA-Z0-9_]+$/)
+    .messages({
+      "any.required": "Username is required",
+      "string.empty": "Username is required",
+      "string.min": "Username must be at least 3 characters long",
+      "string.max": "Username must be at most 30 characters long",
+      "string.pattern.base":
+        "Username must contain only letters, numbers, and underscores",
+    }),
 
   email: Joi.string().email().required().messages({
     "string.email": "A valid email address is required",
@@ -18,11 +22,20 @@ const registerSchema = Joi.object({
     "string.empty": "Email is required",
   }),
 
-  password: Joi.string().min(6).required().messages({
-    "string.min": "Password must be at least 6 characters long",
-    "any.required": "Password is required",
-    "string.empty": "Password is required",
-  }),
+  password: Joi.string()
+    .required()
+    .min(8)
+    .max(24)
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    )
+    .messages({
+      "string.min": "Password must be at least 8 characters long",
+      "any.required": "Password is required",
+      "string.empty": "Password is required",
+      "string.pattern.base":
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+    }),
 });
 
 const loginSchema = Joi.object({
