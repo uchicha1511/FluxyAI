@@ -23,7 +23,7 @@ class AuthService {
       {
         id: user._id,
         email: user.email,
-        username: user.username
+        username: user.username,
       },
       JWT_SECRET,
       {
@@ -66,11 +66,9 @@ class AuthService {
       JWT_SECRET,
       { expiresIn: "15m" },
     );
-    const refreshToken = jwt.sign(
-      { id: user._id },
-      JWT_REFRESH_SECRET,
-      { expiresIn: "7d" },
-    );
+    const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, {
+      expiresIn: "7d",
+    });
     return {
       user: {
         id: user._id,
@@ -85,9 +83,29 @@ class AuthService {
   verifyAccessToken(token) {
     return jwt.verify(token, JWT_SECRET);
   }
-  
+
   verifyRefreshToken(token) {
     return jwt.verify(token, JWT_REFRESH_SECRET);
+  }
+
+  refreshAccessToken(refreshToken) {
+    try {
+      const decoded = this.verifyRefreshToken(refreshToken);
+
+      const accessToken = jwt.sign(
+        {
+          id: decoded.id,
+        },
+        JWT_SECRET,
+        {
+          expiresIn: "15m",
+        },
+      );
+
+      return { accessToken };
+    } catch (error) {
+      throw new AppError("Invalid or expired refresh token", 401, [error]);
+    }
   }
 }
 
