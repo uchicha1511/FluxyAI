@@ -19,6 +19,10 @@ class chatService {
 
     return chat;
   }
+
+  async getAllChats({userId}){
+    return await this.chatRepository.getAllChats({userId});
+  }
 }
 
 export default chatService;

@@ -12,6 +12,10 @@ const chatSchema = new mongoose.Schema(
             ref:"User",
             required:true,
             index:true
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false,
         },  
     },
 {
