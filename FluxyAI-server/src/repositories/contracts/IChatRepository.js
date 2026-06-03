@@ -10,6 +10,10 @@ class IChatRepository {
     async deleteChat(id) {
         throw new Error("Method not implemented.");
     }
+
+    async getAllChats({userId}){
+        throw new Error("Method not implemented.");
+    }
 }
 
 export default IChatRepository;

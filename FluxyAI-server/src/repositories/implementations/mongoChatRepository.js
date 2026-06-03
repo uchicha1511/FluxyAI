@@ -2,8 +2,12 @@ import IChatRepository from "../contracts/IChatRepository.js";
 import Chat from "../../models/chat.model.js";
 
 class MongoChatRepository extends IChatRepository {
-  async createChat(chatData) {
-    return await Chat.create(chatData);
+  async createChat({ userId, title }) {
+    return await Chat.create({ userId, title });
+  }
+
+  async getAllChats({userId}){
+    return await Chat.find({userId}).sort({createdAt: -1});
   }
 
   async findChatById(id) {
