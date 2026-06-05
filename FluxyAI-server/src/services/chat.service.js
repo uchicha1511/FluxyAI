@@ -1,9 +1,11 @@
 import mongoChatRepository from "../repositories/implementations/mongoChatRepository.js";
+import MistralRepository from "../repositories/implementations/MistralRepository.js";
 import { AppError } from "../utils/errors.js";
 
-class chatService {
+class ChatService {
   constructor() {
     this.chatRepository = new mongoChatRepository();
+    this.aiRepository = new MistralRepository();
   }
 
   async createChat(chatData) {
@@ -20,9 +22,13 @@ class chatService {
     return chat;
   }
 
-  async getAllChats({userId}){
-    return await this.chatRepository.getAllChats({userId});
+  async getAllChats({ userId }) {
+    return await this.chatRepository.getAllChats({ userId });
+  }
+
+  async streamChat(message, onChunk) {
+    return await this.aiRepository.streamResponse(message, onChunk);
   }
 }
 
-export default chatService;
+export default ChatService;

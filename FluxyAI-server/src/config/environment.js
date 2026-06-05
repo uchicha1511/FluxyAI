@@ -4,7 +4,8 @@ const Secrets = [
     "PORT",
     "MONGO_URI",
     "JWT_SECRET",
-    "JWT_REFRESH_SECRET"
+    "JWT_REFRESH_SECRET",
+    "MISTRAL_API_KEY"
 ]
 
 const missing = Secrets.filter((secret) => {
@@ -16,4 +17,4 @@ if (missing.length > 0) {
 }
 
 
-export const { PORT, MONGO_URI, JWT_SECRET, JWT_REFRESH_SECRET } = process.env;
+export const { PORT, MONGO_URI, JWT_SECRET, JWT_REFRESH_SECRET, MISTRAL_API_KEY } = process.env;
