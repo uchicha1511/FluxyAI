@@ -8,8 +8,6 @@ router.use(authenticateJWT);
 
 router.post("/create", chatController.createChat);
 
-router.post("/message", chatController.streamChat);
-
 router.delete("/:chatId", chatController.deleteChat);
 
 router.get("/", chatController.getAllChats);

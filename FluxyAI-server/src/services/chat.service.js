@@ -25,10 +25,6 @@ class ChatService {
   async getAllChats({ userId }) {
     return await this.chatRepository.getAllChats({ userId });
   }
-
-  async streamChat(message, onChunk) {
-    return await this.aiRepository.streamResponse(message, onChunk);
-  }
 }
 
 export default ChatService;

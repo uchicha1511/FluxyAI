@@ -51,32 +51,7 @@ class ChatController {
       next(error);
     }
   };
-
-  streamChat = async (req, res, next) => {
-    try {
-      const { message } = req.body;
-
-      if (!message) {
-        return res.status(400).json({
-          success: false,
-          message: "Message is required",
-        });
-      }
-
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache");
-      res.setHeader("Connection", "keep-alive");
-
-      await this.chatService.streamChat(message, (chunk) => {
-        res.write(`data: ${chunk}\n\n`);
-      });
-
-      res.write("data: [DONE]\n\n");
-      res.end();
-    } catch (error) {
-      next(error);
-    }
-  };
+  
 }
 
 export default new ChatController();
