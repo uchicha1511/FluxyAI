@@ -11,6 +11,10 @@ class messageService {
     return await this.aiRepository.streamResponse(message, onChunk);
   }
 
+  async createTitle(message) {
+    return await this.aiRepository.createTitle(message);
+  }
+
   async getAllMessages({ chatId }) {
     return await this.messageRepository.getAllMessages({ chatId });
   }

@@ -1,8 +1,10 @@
+import ChatService from "../services/chat.service.js";
 import MessageService from "../services/message.service.js";
 
 class MessageController {
   constructor() {
     this.messageService = new MessageService();
+    this.chatService = new ChatService();
   }
 
   streamMessages = async (req, res, next) => {
@@ -20,7 +22,13 @@ class MessageController {
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
 
-      await this.chatService.streamChat(message, (chunk) => {
+      const title = await this.messageService.createTitle(message);
+      const chat = await this.chatService.createChat({
+        userId: req.user.id,
+        title,
+      });
+
+      await this.messageService.streamMessages(message, (chunk) => {
         res.write(`data: ${chunk}\n\n`);
       });
 
@@ -33,7 +41,9 @@ class MessageController {
 
   getMessages = async (req, res, next) => {
     try {
-      const result = await this.messageService.getAllMessages({ chatId: req.params.chatId });
+      const result = await this.messageService.getAllMessages({
+        chatId: req.params.chatId,
+      });
       res.status(200).json({ success: true, data: result });
     } catch (error) {
       next(error);
