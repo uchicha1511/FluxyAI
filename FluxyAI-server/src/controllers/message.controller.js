@@ -18,20 +18,32 @@ class MessageController {
         });
       }
 
+      // ── SSE headers ───────────────────────────────────────────────────────
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
       res.setHeader("Connection", "keep-alive");
+      // Disable nginx proxy buffering so tokens reach the client immediately
+      res.setHeader("X-Accel-Buffering", "no");
 
+      // Create (or look up) the chat record and generate its title first
       const title = await this.messageService.createTitle(message);
       const chat = await this.chatService.createChat({
         userId: req.user.id,
         title,
       });
 
-      await this.messageService.streamMessages(message, (chunk) => {
-        res.write(`data: ${chunk}\n\n`);
-      });
+      // Stream tokens through: graph.streamEvents → chatNode → model.stream
+      await this.messageService.streamMessages(
+        { chatId: chat._id, message },
+        (chunk) => {
+          res.write(`data: ${chunk}\n\n`);
+          // flush() is provided by the compression middleware when present;
+          // calling it ensures bytes are sent immediately without buffering.
+          if (typeof res.flush === "function") res.flush();
+        }
+      );
 
+      // Signal the client that the stream is complete
       res.write("data: [DONE]\n\n");
       res.end();
     } catch (error) {
