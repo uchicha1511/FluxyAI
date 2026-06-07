@@ -1,6 +1,7 @@
 import app from "./src/app.js";
 import connectDB from "./src/config/database.js";
 import { PORT } from "./src/config/environment.js";
+import "./src/workers/email.worker.js";
 
 async function startServer() {
     try {

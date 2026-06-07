@@ -10,6 +10,10 @@ async findUserByEmail(email) {
     async findUserById(id) {
         throw new Error("Method not implemented.");
     }
+
+    async updateUser(id, updateData) {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export default IUserRepository;

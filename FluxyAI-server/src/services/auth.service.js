@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import MongoUserRepository from "../repositories/implementations/mongoUserRepository.js";
 import { AppError } from "../utils/errors.js";
 import { JWT_SECRET, JWT_REFRESH_SECRET } from "../config/environment.js";
+import { addEmailJob } from "../queues/email.queue.js";
 
 class AuthService {
   constructor() {
@@ -19,27 +20,22 @@ class AuthService {
 
     const user = await this.userRepository.createUser(userData);
 
-    const accessToken = jwt.sign(
+    const verificationToken = jwt.sign(
       {
         id: user._id,
         email: user.email,
-        username: user.username,
       },
       JWT_SECRET,
       {
-        expiresIn: "15m",
+        expiresIn: "1h",
       },
     );
 
-    const refreshToken = jwt.sign(
-      {
-        id: user._id,
-      },
-      JWT_REFRESH_SECRET,
-      {
-        expiresIn: "7d",
-      },
-    );
+    await addEmailJob("sendVerificationEmail", {
+      email: user.email,
+      username: user.username,
+      token: verificationToken,
+    });
 
     return {
       user: {
@@ -47,8 +43,7 @@ class AuthService {
         username: user.username,
         email: user.email,
       },
-      accessToken,
-      refreshToken,
+      message: "Registration successful. Please verify your email to log in."
     };
   }
 
@@ -61,10 +56,14 @@ class AuthService {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw new AppError("Invalid email or password", 401);
 
+    if (!user.isVerified) {
+      throw new AppError("Please verify your email address to log in", 403);
+    }
+
     const accessToken = jwt.sign(
       { id: user._id, email: user.email },
       JWT_SECRET,
-      { expiresIn: "15m" },
+      { expiresIn: "15m" }
     );
     const refreshToken = jwt.sign({ id: user._id }, JWT_REFRESH_SECRET, {
       expiresIn: "7d",
@@ -78,6 +77,26 @@ class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async verifyEmail(token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      const user = await this.userRepository.findUserById(decoded.id);
+      if (!user) {
+        throw new AppError("User not found", 404);
+      }
+
+      if (user.isVerified) {
+        return { message: "Email is already verified" };
+      }
+
+      await this.userRepository.updateUser(user._id, { isVerified: true });
+      return { message: "Email verified successfully" };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError("Invalid or expired verification token", 400, [error]);
+    }
   }
 
   verifyAccessToken(token) {

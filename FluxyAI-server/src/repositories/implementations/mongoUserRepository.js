@@ -13,6 +13,10 @@ class MongoUserRepository extends IuserRepository {
   async findUserById(id) {
     return await userModel.findById(id);
   }
+
+  async updateUser(id, updateData) {
+    return await userModel.findByIdAndUpdate(id, updateData, { new: true });
+  }
 }
 
 export default MongoUserRepository;
