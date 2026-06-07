@@ -33,7 +33,7 @@ class MistralRepository extends IAIRepository {
     this.titleModel = new ChatMistralAI({
       apiKey: MISTRAL_API_KEY,
       model: "mistral-small-latest",
-      temperature: 0.3, // lower temp → more deterministic titles
+      temperature: 0.3,
     });
 
     // Compile the graph once; reuse across requests
@@ -86,16 +86,12 @@ class MistralRepository extends IAIRepository {
     const eventStream = this.graph.streamEvents(
       { message },
       {
-        version: "v2",       // streamEvents API version (v2 is stable in LangGraph 1.x)
-        streamMode: "values", // emit full state snapshots; tokens come via events
+        version: "v2",
+        streamMode: "values",
       }
     );
 
     for await (const event of eventStream) {
-      /**
-       * "on_chat_model_stream" fires for every token the LLM emits.
-       * The chunk lives at event.data.chunk — a standard AIMessageChunk.
-       */
       if (
         event.event === "on_chat_model_stream" &&
         event.data?.chunk?.content
@@ -117,7 +113,7 @@ class MistralRepository extends IAIRepository {
       {
         role: "system",
         content:
-          "You are a helpful assistant that generates very short, concise chat titles (3–6 words). " +
+          "You are a helpful assistant that generates very short, concise chat titles (3 to 6 words). " +
           "Reply with ONLY the title text, no punctuation, no quotes.",
       },
       {

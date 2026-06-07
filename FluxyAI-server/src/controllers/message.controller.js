@@ -36,9 +36,7 @@ class MessageController {
       await this.messageService.streamMessages(
         { chatId: chat._id, message },
         (chunk) => {
-          res.write(`data: ${chunk}\n\n`);
-          // flush() is provided by the compression middleware when present;
-          // calling it ensures bytes are sent immediately without buffering.
+          res.write(`data: ${JSON.stringify(chunk)}\n\n`);
           if (typeof res.flush === "function") res.flush();
         }
       );
