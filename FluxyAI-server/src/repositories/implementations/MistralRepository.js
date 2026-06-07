@@ -69,17 +69,14 @@ class MistralRepository extends IAIRepository {
   }
 
   async streamResponse(message, onChunk) {
-    const result = await this.graph.invoke({
-      message,
-    });
+  const stream = await this.model.stream(message);
 
-    const response = result.response || "";
-
-    // Fake streaming through SSE chunks
-    for (const char of response) {
-      onChunk(char);
+  for await (const chunk of stream) {
+    if (chunk.content) {
+      onChunk(chunk.content);
     }
   }
+}
 }
 
 export default MistralRepository;

@@ -7,9 +7,29 @@ class messageService {
     this.aiRepository = new MistralRepository();
   }
 
-  async streamMessages(message, onChunk) {
-    return await this.aiRepository.streamResponse(message, onChunk);
-  }
+async streamMessages({ chatId, message }, onChunk) {
+  await this.messageRepository.createMessage({
+    chat: chatId,
+    sender: "user",
+    content: message,
+  });
+
+  let fullResponse = "";
+
+  await this.aiRepository.streamResponse(
+    message,
+    (chunk) => {
+      fullResponse += chunk;
+      onChunk(chunk);
+    }
+  );
+
+  await this.messageRepository.createMessage({
+    chat: chatId,
+    sender: "agent",
+    content: fullResponse,
+  });
+}
 
   async createTitle(message) {
     return await this.aiRepository.createTitle(message);

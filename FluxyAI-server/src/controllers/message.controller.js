@@ -28,9 +28,15 @@ class MessageController {
         title,
       });
 
-      await this.messageService.streamMessages(message, (chunk) => {
-        res.write(`data: ${chunk}\n\n`);
-      });
+      await this.messageService.streamMessages(
+        {
+          chatId: chat._id,
+          message,
+        },
+        (chunk) => {
+          res.write(`data: ${chunk}\n\n`);
+        }
+      );
 
       res.write("data: [DONE]\n\n");
       res.end();
