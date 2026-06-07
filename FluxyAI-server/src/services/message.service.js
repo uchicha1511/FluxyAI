@@ -1,36 +1,55 @@
-import mongoMessageRepository from "../repositories/implementations/mongoMessageRepository.js";
+import MongoMessageRepository from "../repositories/implementations/mongoMessageRepository.js";
 import MistralRepository from "../repositories/implementations/MistralRepository.js";
 
-class messageService {
+class MessageService {
   constructor() {
-    this.messageRepository = new mongoMessageRepository();
+    this.messageRepository = new MongoMessageRepository();
     this.aiRepository = new MistralRepository();
   }
 
-async streamMessages({ chatId, message }, onChunk) {
-  await this.messageRepository.createMessage({
-    chat: chatId,
-    sender: "user",
-    content: message,
-  });
+  /**
+   * Saves the user message, streams the AI response token-by-token via
+   * LangGraph's graph.streamEvents(), then persists the complete AI message.
+   *
+   * Flow:
+   *   Controller → streamMessages() → aiRepository.streamResponse()
+   *   → graph.streamEvents() → chatNode → model.stream() → onChunk (SSE)
+   *
+   * @param {{ chatId: string, message: string }} params
+   * @param {(chunk: string) => void} onChunk  - SSE token callback
+   */
+  async streamMessages({ chatId, message }, onChunk) {
+    // 1. Persist the user message before generation starts
+    await this.messageRepository.createMessage({
+      chat: chatId,
+      sender: "user",
+      content: message,
+    });
 
-  let fullResponse = "";
+    let fullResponse = "";
 
-  await this.aiRepository.streamResponse(
-    message,
-    (chunk) => {
-      fullResponse += chunk;
-      onChunk(chunk);
+    try {
+      // 2. Drive LangGraph execution; onChunk fires for every token
+      await this.aiRepository.streamResponse(message, (chunk) => {
+        fullResponse += chunk;
+        onChunk(chunk);
+      });
+    } finally {
+      // 3. Always persist the AI message, even if streaming was interrupted
+      if (fullResponse) {
+        await this.messageRepository.createMessage({
+          chat: chatId,
+          sender: "agent",
+          content: fullResponse,
+        });
+      }
     }
-  );
+  }
 
-  await this.messageRepository.createMessage({
-    chat: chatId,
-    sender: "agent",
-    content: fullResponse,
-  });
-}
-
+  /**
+   * Generates a concise title for the first user message in a chat.
+   * Delegated to the AI repository (direct model.invoke(), no graph).
+   */
   async createTitle(message) {
     return await this.aiRepository.createTitle(message);
   }
@@ -40,4 +59,4 @@ async streamMessages({ chatId, message }, onChunk) {
   }
 }
 
-export default messageService;
+export default MessageService;
