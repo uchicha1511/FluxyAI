@@ -1,20 +1,27 @@
-import dotenv from "dotenv/config";
+import "dotenv/config";
 
-const Secrets = [
-    "PORT",
-    "MONGO_URI",
-    "JWT_SECRET",
-    "JWT_REFRESH_SECRET",
-    "MISTRAL_API_KEY"
-]
+const requiredEnvVars = [
+  "PORT",
+  "MONGO_URI",
+  "JWT_SECRET",
+  "JWT_REFRESH_SECRET",
+  "MISTRAL_API_KEY",
+  "TAVILY_API_KEY",
+];
 
-const missing = Secrets.filter((secret) => {
-    return !process.env[secret];
-})
+const missing = requiredEnvVars.filter((key) => !process.env[key]);
 
 if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
+  throw new Error(
+    `Server Error: Missing required environment variables: ${missing.join(", ")}`,
+  );
 }
 
-
-export const { PORT, MONGO_URI, JWT_SECRET, JWT_REFRESH_SECRET, MISTRAL_API_KEY } = process.env;
+export const {
+  PORT,
+  MONGO_URI,
+  JWT_SECRET,
+  JWT_REFRESH_SECRET,
+  MISTRAL_API_KEY,
+  TAVILY_API_KEY,
+} = process.env;

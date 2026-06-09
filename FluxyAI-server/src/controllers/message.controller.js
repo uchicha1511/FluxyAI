@@ -38,7 +38,7 @@ class MessageController {
         (chunk) => {
           res.write(`data: ${JSON.stringify(chunk)}\n\n`);
           if (typeof res.flush === "function") res.flush();
-        }
+        },
       );
 
       // Signal the client that the stream is complete
