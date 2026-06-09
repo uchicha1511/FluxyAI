@@ -63,8 +63,6 @@ class MistralRepository extends IAIRepository {
 
       const stream = await this.model.stream(messages);
 
-      // Concatenate all stream chunks to reconstruct the full AIMessage,
-      // preserving tool_calls metadata (not just text content).
       let aiMessage = null;
       for await (const chunk of stream) {
         aiMessage = aiMessage ? aiMessage.concat(chunk) : chunk;
