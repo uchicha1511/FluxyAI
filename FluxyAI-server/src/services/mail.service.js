@@ -1,5 +1,5 @@
 import { BrevoClient } from "@getbrevo/brevo";
-import { BREVO_API_KEY, APP_URL } from "../config/environment.js";
+import { BREVO_API_KEY, APP_URL, SENDER_EMAIL } from "../config/environment.js";
 
 class MailService {
   constructor() {
@@ -40,7 +40,7 @@ class MailService {
             </body>
           </html>
         `,
-        sender: { name: "FluxyAI Auth", email: "no-reply@fluxyai.com" },
+        sender: { name: "FluxyAI", email: SENDER_EMAIL },
         to: [{ email, name: username }]
       });
       console.log(`Verification email sent to ${email} via Brevo.`);
