@@ -22,17 +22,23 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   },
 );
 
+// TTL for 5 minutes. User data should be deleted if not verified in 5 minutes of the registeration.
+userSchema.index({ createdAt: 1 }, { expireAfterSeconds: 300 });
+
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
     
-
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
  
 });
 

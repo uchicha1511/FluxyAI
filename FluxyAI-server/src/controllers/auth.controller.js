@@ -20,20 +20,27 @@ class AuthController {
     try {
       const result = await this.authService.register(req.body);
 
-      res.cookie("accessToken", result.accessToken, {
-        ...this.cookieOptions,
-        maxAge: 15 * 60 * 1000, // 15 minutes
-      });
-
-      res.cookie("refreshToken", result.refreshToken, {
-        ...this.cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-      delete result.refreshToken;
-
       res.status(201).json({
         success: true,
         data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  verifyEmail = async (req, res, next) => {
+    try {
+      const { token } = req.query;
+      if (!token) {
+        throw new AppError("Verification token is required", 400);
+      }
+
+      const result = await this.authService.verifyEmail(token);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
       });
     } catch (error) {
       next(error);
