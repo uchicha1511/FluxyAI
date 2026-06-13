@@ -9,7 +9,7 @@ class MessageController {
 
   streamMessages = async (req, res, next) => {
     try {
-      const { message } = req.body;
+      const { message, provider = "mistral" } = req.body;
 
       if (!message) {
         return res.status(400).json({
@@ -32,13 +32,13 @@ class MessageController {
         title,
       });
 
-      // Stream tokens through: graph.streamEvents → chatNode → model.stream
+      // Stream tokens through: graph.streamEvents → chatNode/geminiNode → model.stream
       await this.messageService.streamMessages(
-        { chatId: chat._id, message },
+        { chatId: chat._id, message, provider },
         (chunk) => {
           res.write(`data: ${JSON.stringify(chunk)}\n\n`);
           if (typeof res.flush === "function") res.flush();
-        }
+        },
       );
 
       // Signal the client that the stream is complete
