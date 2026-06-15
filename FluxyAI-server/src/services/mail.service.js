@@ -9,7 +9,6 @@ class MailService {
     }
   }
 
-  
   async sendVerificationEmail(email, username, token) {
     const verificationUrl = `${APP_URL}/api/auth/verify?token=${token}`;
 
@@ -53,4 +52,3 @@ class MailService {
 }
 
 export default new MailService();
-

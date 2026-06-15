@@ -24,4 +24,4 @@ emailWorker.on("failed", (job, err) => {
   console.error(`[Worker] Job ${job?.id} failed with error: ${err.message}`);
 });
 
-export default emailWorker;
+export default emailWorker;

@@ -1,10 +1,12 @@
 import MongoMessageRepository from "../repositories/implementations/mongoMessageRepository.js";
 import MistralRepository from "../repositories/implementations/MistralRepository.js";
+// import ChatGPTRepository from "../repositories/implementations/OpenAIRepository.js"; // TODO: switch to OpenAI when ready
 
 class MessageService {
   constructor() {
     this.messageRepository = new MongoMessageRepository();
     this.aiRepository = new MistralRepository();
+    // this.aiRepository = new ChatGPTRepository(); // TODO: switch to OpenAI when ready
   }
 
   /**
