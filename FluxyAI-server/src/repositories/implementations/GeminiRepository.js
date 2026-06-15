@@ -81,6 +81,11 @@ class GeminiRepository extends IAIRepository {
    * @param {Function} onChunk  - Called with each token string as it arrives
    */
   async streamResponse(message, provider, onChunk) {
+    let actualOnChunk = onChunk;
+    if (typeof provider === "function") {
+      actualOnChunk = provider;
+    }
+
     const eventStream = this.graph.streamEvents(
       { message },
       {
@@ -94,7 +99,7 @@ class GeminiRepository extends IAIRepository {
         event.event === "on_chat_model_stream" &&
         event.data?.chunk?.content
       ) {
-        onChunk(event.data.chunk.content);
+        if (actualOnChunk) actualOnChunk(event.data.chunk.content);
       }
     }
   }

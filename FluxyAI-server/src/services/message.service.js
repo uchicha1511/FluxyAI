@@ -1,12 +1,10 @@
 import MongoMessageRepository from "../repositories/implementations/mongoMessageRepository.js";
-import MistralRepository from "../repositories/implementations/MistralRepository.js";
-// import ChatGPTRepository from "../repositories/implementations/OpenAIRepository.js"; // TODO: switch to OpenAI when ready
+import ChatGPTRepository from "../repositories/implementations/OpenAIRepository.js";
 
 class MessageService {
   constructor() {
     this.messageRepository = new MongoMessageRepository();
-    this.aiRepository = new MistralRepository();
-    // this.aiRepository = new ChatGPTRepository(); // TODO: switch to OpenAI when ready
+    this.aiRepository = new ChatGPTRepository();
   }
 
   /**
@@ -32,7 +30,7 @@ class MessageService {
 
     try {
       // 2. Drive LangGraph execution; onChunk fires for every token
-      await this.aiRepository.streamResponse(message, provider, (chunk) => {
+      await this.aiRepository.streamResponse(message, (chunk) => {
         fullResponse += chunk;
         onChunk(chunk);
       });

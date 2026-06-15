@@ -125,7 +125,13 @@ class MistralRepository extends IAIRepository {
    * @param {Function} onChunk  - Called with each token string as it arrives
    */
   async streamResponse(message, provider, onChunk) {
-    const selectedProvider = provider || "mistral";
+    let actualOnChunk = onChunk;
+    let selectedProvider = provider || "mistral";
+    if (typeof provider === "function") {
+      actualOnChunk = provider;
+      selectedProvider = "mistral";
+    }
+
     const eventStream = this.graph.streamEvents(
       { message, provider: selectedProvider },
       {
@@ -139,7 +145,7 @@ class MistralRepository extends IAIRepository {
         event.event === "on_chat_model_stream" &&
         event.data?.chunk?.content
       ) {
-        onChunk(event.data.chunk.content);
+        if (actualOnChunk) actualOnChunk(event.data.chunk.content);
       }
     }
   }
