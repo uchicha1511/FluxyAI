@@ -25,14 +25,14 @@ class GeminiRepository extends IAIRepository {
     // Primary chat model for Gemini
     this.model = new ChatGoogleGenerativeAI({
       apiKey: GEMINI_API_KEY,
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       temperature: 0.7,
     });
 
     // Separate model instance for title generation
     this.titleModel = new ChatGoogleGenerativeAI({
       apiKey: GEMINI_API_KEY,
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       temperature: 0.3,
     });
 
