@@ -1,8 +1,7 @@
 import IAIRepository from "../contracts/IAIRepository.js";
-import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { StateGraph, START, END, Annotation } from "@langchain/langgraph";
-import { MISTRAL_API_KEY, GEMINI_API_KEY } from "../../config/environment.js";
+import { GEMINI_API_KEY } from "../../config/environment.js";
 
 // ─── State Schema ────────────────────────────────────────────────────────────
 // Annotation.Root defines the typed state that flows through the graph.
@@ -12,11 +11,6 @@ const GraphState = Annotation.Root({
     reducer: (_, next) => next,
     default: () => "",
   }),
-  // Which provider to route to: "mistral" or "gemini"
-  provider: Annotation({
-    reducer: (_, next) => next,
-    default: () => "mistral",
-  }),
   // Accumulated AI response (populated after the node finishes)
   response: Annotation({
     reducer: (_, next) => next,
@@ -24,29 +18,22 @@ const GraphState = Annotation.Root({
   }),
 });
 
-class MistralRepository extends IAIRepository {
+class GeminiRepository extends IAIRepository {
   constructor() {
     super();
 
-    // Primary chat model for Mistral
-    this.model = new ChatMistralAI({
-      apiKey: MISTRAL_API_KEY,
-      model: "mistral-small-latest",
+    // Primary chat model for Gemini
+    this.model = new ChatGoogleGenerativeAI({
+      apiKey: GEMINI_API_KEY,
+      model: "gemini-1.5-flash",
       temperature: 0.7,
     });
 
     // Separate model instance for title generation
-    this.titleModel = new ChatMistralAI({
-      apiKey: MISTRAL_API_KEY,
-      model: "mistral-small-latest",
-      temperature: 0.3,
-    });
-
-    // Primary chat model for Gemini
-    this.geminiModel = new ChatGoogleGenerativeAI({
+    this.titleModel = new ChatGoogleGenerativeAI({
       apiKey: GEMINI_API_KEY,
       model: "gemini-1.5-flash",
-      temperature: 0.7,
+      temperature: 0.3,
     });
 
     // Compile the graph once; reuse across requests
@@ -59,9 +46,9 @@ class MistralRepository extends IAIRepository {
     const graph = new StateGraph(GraphState);
 
     /**
-     * chatNode: streams tokens from Mistral and accumulates the full text.
+     * geminiNode: streams tokens from Gemini and accumulates the full text.
      */
-    graph.addNode("chatNode", async (state) => {
+    graph.addNode("geminiNode", async (state) => {
       const stream = await this.model.stream([
         { role: "user", content: state.message },
       ]);
@@ -76,39 +63,8 @@ class MistralRepository extends IAIRepository {
       return { response: fullResponse };
     });
 
-    /**
-     * geminiNode: streams tokens from Gemini and accumulates the full text.
-     */
-    graph.addNode("geminiNode", async (state) => {
-      const stream = await this.geminiModel.stream([
-        { role: "user", content: state.message },
-      ]);
-
-      let fullResponse = "";
-      for await (const chunk of stream) {
-        if (chunk.content) {
-          fullResponse += chunk.content;
-        }
-      }
-
-      return { response: fullResponse };
-    });
-
-    // Router edge decision maker
-    const routeModel = (state) => {
-      if (state.provider === "gemini") {
-        return "geminiNode";
-      }
-      return "chatNode";
-    };
-
-    // Set up routing
-    graph.addConditionalEdges(START, routeModel, {
-      chatNode: "chatNode",
-      geminiNode: "geminiNode",
-    });
-
-    graph.addEdge("chatNode", END);
+    // Directly route START to geminiNode and geminiNode to END
+    graph.addEdge(START, "geminiNode");
     graph.addEdge("geminiNode", END);
 
     return graph.compile();
@@ -121,13 +77,12 @@ class MistralRepository extends IAIRepository {
    * forwards every streaming token to the provided `onChunk` callback.
    *
    * @param {string}   message  - The user's message text
-   * @param {string}   provider - The selected AI provider ("mistral" or "gemini")
+   * @param {string}   provider - The selected AI provider (ignored, always gemini)
    * @param {Function} onChunk  - Called with each token string as it arrives
    */
   async streamResponse(message, provider, onChunk) {
-    const selectedProvider = provider || "mistral";
     const eventStream = this.graph.streamEvents(
-      { message, provider: selectedProvider },
+      { message },
       {
         version: "v2",
         streamMode: "values",
@@ -170,4 +125,4 @@ class MistralRepository extends IAIRepository {
   }
 }
 
-export default MistralRepository;
+export default GeminiRepository;

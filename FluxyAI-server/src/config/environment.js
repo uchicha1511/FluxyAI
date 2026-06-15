@@ -1,16 +1,17 @@
-import dotenv from "dotenv/config";
+import "dotenv/config";
 
-// BREVO_API_KEY is optional - if missing, emails are logged to console (dev mode)
+// BREVO_API_KEY & GEMINI_API_KEY are optional - server works without them
 const Secrets = [
   "PORT",
   "MONGO_URI",
   "JWT_SECRET",
   "JWT_REFRESH_SECRET",
+  "OPENAI_API_KEY",
+  "GEMINI_API_KEY",
   "MISTRAL_API_KEY",
   "REDIS_URL",
   "TAVILY_API_KEY",
   "SENDER_EMAIL",
-  "OPENAI_API_KEY",
 ];
 
 const missing = Secrets.filter((secret) => {
@@ -33,6 +34,7 @@ export const {
   BREVO_API_KEY,
   SENDER_EMAIL,
   OPENAI_API_KEY,
+  GEMINI_API_KEY,
 } = process.env;
 
 export const REDIS_HOST = process.env.REDIS_HOST || "127.0.0.1";

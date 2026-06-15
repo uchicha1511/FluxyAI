@@ -15,12 +15,12 @@ class MessageService {
    *
    * Flow:
    *   Controller → streamMessages() → aiRepository.streamResponse()
-   *   → graph.streamEvents() → chatNode → model.stream() → onChunk (SSE)
+   *   → graph.streamEvents() → chatNode/geminiNode → model.stream() → onChunk (SSE)
    *
-   * @param {{ chatId: string, message: string }} params
+   * @param {{ chatId: string, message: string, provider?: string }} params
    * @param {(chunk: string) => void} onChunk  - SSE token callback
    */
-  async streamMessages({ chatId, message }, onChunk) {
+  async streamMessages({ chatId, message, provider }, onChunk) {
     // 1. Persist the user message before generation starts
     await this.messageRepository.createMessage({
       chat: chatId,
@@ -32,7 +32,7 @@ class MessageService {
 
     try {
       // 2. Drive LangGraph execution; onChunk fires for every token
-      await this.aiRepository.streamResponse(message, (chunk) => {
+      await this.aiRepository.streamResponse(message, provider, (chunk) => {
         fullResponse += chunk;
         onChunk(chunk);
       });
