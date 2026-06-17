@@ -23,10 +23,13 @@ const GraphState = Annotation.Root({
   }),
 });
 
+
+
 class MistralRepository extends IAIRepository {
   constructor() {
     super();
 
+    // Primary chat model for Mistral
     // Tool-enabled model
     this.model = new ChatMistralAI({
       apiKey: MISTRAL_API_KEY,
@@ -48,6 +51,9 @@ class MistralRepository extends IAIRepository {
   _buildGraph() {
     const graph = new StateGraph(GraphState);
 
+    /**
+     * chatNode: streams tokens from Mistral and accumulates the full text.
+     */
     // Chat Node
     graph.addNode("chatNode", async (state) => {
       const messages =
@@ -76,6 +82,7 @@ class MistralRepository extends IAIRepository {
       };
     });
 
+    // Directly route START to chatNode and chatNode to END
     // Tool Node
     const toolNode = new ToolNode([tavilyTool]);
     graph.addNode("tools", toolNode);
@@ -100,6 +107,20 @@ class MistralRepository extends IAIRepository {
   }
 
 
+  /**
+   * streamResponse — drives graph execution via streamEvents() and
+   * forwards every streaming token to the provided `onChunk` callback.
+   *
+   * @param {string}   message  - The user's message text
+   * @param {string}   provider - The selected AI provider (ignored)
+   * @param {Function} onChunk  - Called with each token string as it arrives
+   */
+  async streamResponse(message, provider, onChunk) {
+    let actualOnChunk = onChunk;
+    if (typeof provider === "function") {
+      actualOnChunk = provider;
+    }
+
   //Response Streaming
 
   async streamResponse(message, onChunk) {
@@ -116,7 +137,7 @@ class MistralRepository extends IAIRepository {
         event.event === "on_chat_model_stream" &&
         event.data?.chunk?.content
       ) {
-        onChunk(event.data.chunk.content);
+        if (actualOnChunk) actualOnChunk(event.data.chunk.content);
       }
     }
   }

@@ -1,10 +1,10 @@
 import MongoMessageRepository from "../repositories/implementations/mongoMessageRepository.js";
-import MistralRepository from "../repositories/implementations/MistralRepository.js";
+import ChatGPTRepository from "../repositories/implementations/OpenAIRepository.js";
 
 class MessageService {
   constructor() {
     this.messageRepository = new MongoMessageRepository();
-    this.aiRepository = new MistralRepository();
+    this.aiRepository = new ChatGPTRepository();
   }
 
   /**
@@ -13,12 +13,12 @@ class MessageService {
    *
    * Flow:
    *   Controller → streamMessages() → aiRepository.streamResponse()
-   *   → graph.streamEvents() → chatNode → model.stream() → onChunk (SSE)
+   *   → graph.streamEvents() → chatNode/geminiNode → model.stream() → onChunk (SSE)
    *
-   * @param {{ chatId: string, message: string }} params
+   * @param {{ chatId: string, message: string, provider?: string }} params
    * @param {(chunk: string) => void} onChunk  - SSE token callback
    */
-  async streamMessages({ chatId, message }, onChunk) {
+  async streamMessages({ chatId, message, provider }, onChunk) {
     // 1. Persist the user message before generation starts
     await this.messageRepository.createMessage({
       chat: chatId,
